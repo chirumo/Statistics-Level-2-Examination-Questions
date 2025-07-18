@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>統計検定2級クイズ</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 1em; line-height: 1.5; }
+    .question { margin-bottom: 2em; }
+    .choices button { display: block; margin: 0.5em 0; padding: 0.5em; font-size: 1em; }
+    .result { font-weight: bold; margin-top: 1em; }
+    .explanation { margin-top: 1em; padding: 1em; background: #f0f0f0; border-left: 4px solid #666; }
+    #nextBtn { margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h1>統計検定2級 クイズ形式ブラウザ</h1>
+  <div id="quiz"></div>
+  <script>
+    const quizData = [
+      { question: "問1 消費者物価上昇率の分布と歪度について、最も適切なものを1つ選べ。", choices: ["1. 分布は右に長い裾をもち，歪度は正の値をとる。", "2. 分布は右に長い裾をもち，歪度は負の値をとる。", "3. 分布は左に長い裾をもち，歪度は正の値をとる。", "4. 分布は左に長い裾をもち，歪度は負の値をとる。", "5. 分布は左右対称であり，歪度は0である。"], correct: 0, explanation: "平均 > 中央 ⇒ 正の歪度 (右裾が長い)" },
+      { question: "問2 国際旅客機乗客数の年次変化率は？", choices: ["1. 12.1%", "2. 15.4%", "3. 15.7%", "4. 19.5%", "5. 21.1%"], correct: 1, explanation: "(204/115)^(1/4)-1 ≈ 15.4%" },
+      { question: "問3 パーシェ指数の値は？", choices: ["1. 95.4", "2. 104.8", "3. 105.0", "4. 108.6", "5. 126.3"], correct: 2, explanation: "比較年価格×基準年数量で105.0" },
+      { question: "問4 東京都の新聞発行部数の減少は？", choices: ["1. 57万", "2. 223万", "3. 290万", "4. 385万", "5. 675万"], correct: 3, explanation: "1990年→2019年で約385万部減少" },
+      { question: "問5〔1〕 散布図に関する正しい記述は？", choices: ["1. II のみ", "2. I と II", "3. I と III", "4. II と III", "5. 全て正しい"], correct: 4, explanation: "II, III 正しい。飛距離点の方が分散大" },
+      { question: "問5〔2〕 共分散と相関係数に関して、（ア）（イ）に当てはまるのは？", choices: ["1. 1/4, 1/2", "2. 1/4, 1", "3. 1/2, 1/2", "4. 1/2, 1", "5. 1/2, 2"], correct: 4, explanation: "線形変換の係数から（ア）=1/2,（イ）=2" },
+      { question: "問6 相関係数はいくつ？", choices: ["1. 0.02", "2. 0.75", "3. 0.83", "4. 0.98", "5. 36.4"], correct: 2, explanation: "公式から計算すると約0.83" },
+      { question: "問7 抽出法の組合せで正しいのは？", choices: ["1. 層化, 集落", "2. 集落, 集落", "3. 層化二段, 層化", "4. 層化, 層化二段", "5. 集落, 層化二段"], correct: 4, explanation: "部長=集落, 社員=層化二段" },
+      { question: "問8 相関係数と独立性の関係は？", choices: ["1. 相関0、独立", "2. 相関0、非独立", "3. −1/4、非独立", "4. −1/2、非独立", "5. −1、非独立"], correct: 1, explanation: "相関係数0 かつ確率の積 ≠ 同時確率 ⇒ 非独立" },
+      { question: "問9 同じ誕生日の人がいる確率は？", choices: ["1. (364/365)^25", "2. 1−(364/365)^24", "3. 1−(364/365)^25", "4. 365!/365^24×340!", "5. 1−365!/365^25×340!"], correct: 4, explanation: "有名な誕生日の問題の公式" },
+      { question: "問10 P(X ≤ c)=0.011 のときのcは？", choices: ["1. −2.29", "2. 2.29", "3. 37.14", "4. 39.39", "5. 80.61"], correct: 3, explanation: "正規分布 N(60,9²) ⇒ Z=−2.29 ⇒ X=60 + (−2.29×9)" },
+      // 問11〜問35 同様にここへ追加可（省略）
+    ];
+
+    let current = 0;
+
+    function loadQuestion() {
+      const q = quizData[current];
+      const container = document.getElementById('quiz');
+      container.innerHTML = `
+        <div class="question">
+          <h2>${q.question}</h2>
+          <div class="choices">
+            ${q.choices.map((c, i) => `<button onclick="checkAnswer(${i})">${c}</button>`).join('')}
+          </div>
+          <div class="result" id="result"></div>
+          <div class="explanation" id="explanation"></div>
+        </div>
+      `;
+    }
+
+    function checkAnswer(i) {
+      const q = quizData[current];
+      const result = document.getElementById('result');
+      const explanation = document.getElementById('explanation');
+
+      if (i === q.correct) {
+        result.textContent = '正解！';
+        result.style.color = 'green';
+      } else {
+        result.textContent = '不正解...';
+        result.style.color = 'red';
+      }
+      explanation.textContent = `解説：${q.explanation}`;
+
+      if (!document.getElementById('nextBtn')) {
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = '次の問題へ';
+        nextBtn.id = 'nextBtn';
+        nextBtn.onclick = () => {
+          current++;
+          if (current < quizData.length) {
+            loadQuestion();
+          } else {
+            document.getElementById('quiz').innerHTML = '<h2>すべての問題が終了しました！</h2>';
+          }
+        };
+        explanation.after(nextBtn);
+      }
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
